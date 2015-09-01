@@ -1,21 +1,6 @@
 # coding:utf:8
 __author__ = 'kevin yuan'
 import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.poolmanager import PoolManager
-import ssl
-
-class MyAdapter(HTTPAdapter):
-    def init_poolmanager(self, connections, maxsize, block=False):
-        self.poolmanager = PoolManager(num_pools=connections,
-                                       maxsize=maxsize,
-                                       block=block,
-                                       
-                                       ssl_version=ssl.PROTOCOL_TLSv1)
-
-s = requests.Session()
-s.mount('https://', MyAdapter())
-r = s.get('https://10.25.27.90:8000/login', verify=False) 
 
 class SaltStack(object):
 
@@ -57,11 +42,10 @@ class SaltStack(object):
             raise Exception('Error from source %s' % r.text)
  
     def manage_status(self):
-        r = requests.post(self.host, verify=False, cookies=self.cookies, data={'client': 'runner',
-                                                                                'fun': 'manage.status', 
-                                                                                })
+        r = requests.post(self.host, cookies=self.cookies, data={'client': 'runner',
+                                                                'fun': 'manage.status'})
         if r.status_code == 200:
-            return r.json()['return'][0]
+            return r.json()
         else:
             raise Exception('Error from source %s' % r.text)
             
@@ -97,7 +81,6 @@ class SaltStack(object):
         if r.status_code == 200:
             print type(r.json())
             return r.json()
-            return True
         else:
             raise Exception('Error from source %s' % r.text)
  
@@ -162,20 +145,23 @@ class SaltStack(object):
         else:
             raise Exception('Error from source %s' % r.text)
 
+
 def demo():
-    sapi = SaltStack(host="10.25.27.90",
-                 port='8000',
-                 username="salt",
-                 password="Paic1234",
-                 secure=True)
+    print HOST, PORT, USER, PASS, SECURE
+    sapi = SaltStack(host=HOST,
+                 port=PORT,
+                 username=USER,
+                 password=PASS,
+                 secure=SECURE)
     print sapi.host
+    print sapi.cookies
     # print sapi.get_minion_detail('*')
     # print sapi.job_info(jid='20150824220447986810')
     # print sapi.job_result(jid='20150824220447986810')
-    from_path = "salt://share/SIS-PA18-DEPLOY/SIS-PA186.19.0/SIS-PA186.19.0.4/app/openwebapp/6.18.0.xls"
-    to_path = "/root/6.18.0.xls"
-    print sapi.cp_file('10.25.27.114', from_path=from_path, to_path=to_path)
-    print sapi.cmd_run('10.25.153.173', '/bin/sh /wls/wls81/test.sh')
+    # from_path = "salt://share/SIS-PA18-DEPLOY/SIS-PA186.19.0/SIS-PA186.19.0.4/app/openwebapp/6.18.0.xls"
+    # to_path = "/root/6.18.0.xls"
+    # print sapi.cp_file('10.25.27.114', from_path=from_path, to_path=to_path)
+    # print sapi.cmd_run('10.25.153.173', '/bin/sh /wls/wls81/test.sh')
     print sapi.manage_status()
     # print sapi.
     # print sapi.get_ip_addr('10.25.27.114')
@@ -191,4 +177,5 @@ def demo():
 
 
 if __name__ == "__main__":
+    from placeholders import *
     demo()
