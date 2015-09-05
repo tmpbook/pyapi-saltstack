@@ -9,6 +9,8 @@ Use this above to ignore the `InsecureRequestWarning`
 """
 
 import requests
+requests.packages.urllib3.disable_warnings()
+
 class SaltStack(object):
 
     cookies = None
@@ -31,18 +33,17 @@ class SaltStack(object):
         r = requests.post(self.login_url, verify=False, data={'username': username,
                                                           'password': password,
                                                           'eauth': eproto})
-
         if r.status_code == 200:
             self.cookies = r.cookies
         else:
             raise Exception('Error from source %s' % r.text)
 
-    def cmd_run(self, tgt, commond, expr_form='compound', fun='cmd.run'):
-        r = requests.post(self.host, verify=False, cookies=self.cookies, data={'tgt': tgt, 
-                                                                                'client': 'local',
-                                                                                'expr_form': expr_form, 
-                                                                                'fun': fun, 
-                                                                                'arg': commond})
+    def cmd_run(self, tgt, command, expr_form='compound', fun='cmd.run'):
+        r = requests.post(self.host, verify=False, cookies=self.cookies, data={'tgt': tgt,
+                                                                               'client': 'local',
+                                                                               'expr_form': expr_form,
+                                                                               'fun': fun,
+                                                                               'arg': command})
         if r.status_code == 200:
             return r.json()['return'][0]
         else:
@@ -50,7 +51,7 @@ class SaltStack(object):
  
     def manage_status(self):
         r = requests.post(self.host, cookies=self.cookies, data={'client': 'runner',
-                                                                'fun': 'manage.status'})
+                                                                 'fun': 'manage.status'})
         if r.status_code == 200:
             return r.json()
         else:
@@ -86,7 +87,6 @@ class SaltStack(object):
                                                                                 'arg': [from_path, to_path],
                                                                       })
         if r.status_code == 200:
-            print type(r.json())
             return r.json()
         else:
             raise Exception('Error from source %s' % r.text)
@@ -152,37 +152,14 @@ class SaltStack(object):
         else:
             raise Exception('Error from source %s' % r.text)
 
-
-def demo():
-    print HOST, PORT, USER, PASS, SECURE
+def test():
     sapi = SaltStack(host=HOST,
-                 port=PORT,
-                 username=USER,
-                 password=PASS,
-                 secure=SECURE)
-    print sapi.host
-    print sapi.cookies
-    # print sapi.get_minion_detail('*')
-    # print sapi.job_info(jid='20150824220447986810')
-    # print sapi.job_result(jid='20150824220447986810')
-    # from_path = "salt://share/SIS-PA18-DEPLOY/SIS-PA186.19.0/SIS-PA186.19.0.4/app/openwebapp/6.18.0.xls"
-    # to_path = "/root/6.18.0.xls"
-    # print sapi.cp_file('10.25.27.114', from_path=from_path, to_path=to_path)
-    # print sapi.cmd_run('10.25.153.173', '/bin/sh /wls/wls81/test.sh')
-    print sapi.manage_status()
-    # print sapi.
-    # print sapi.get_ip_addr('10.25.27.114')
-    # print sapi.get_ip_addr('*')
-    # print sapi.minions_url
-    # print sapi.cookies
-    # print sapi.get_ip_addr("*", client='local')[0]
-    # print sapi.get_minion_details()
-    # dict =  sapi.get_roles('*')[0]
-    # print dict
-    # for minion, result in dict.items():
-    #     print minion, result
-
+                     port=PORT,
+                     username=USER,
+                     password=PASS,
+                     secure=SECURE)
+    print sapi.cmd_run(tgt='*', command='pwd')
 
 if __name__ == "__main__":
     from placeholders import *
-    demo()
+    test()
