@@ -1,7 +1,14 @@
 # coding:utf:8
 __author__ = 'kevin yuan'
-import requests
 
+"""
+import request
+requests.packages.urllib3.disable_warnings()
+-----
+Use this above to ignore the `InsecureRequestWarning`
+"""
+
+import requests
 class SaltStack(object):
 
     cookies = None
