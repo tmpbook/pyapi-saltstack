@@ -56,7 +56,6 @@ class SaltStack(object):
             return r.json()
         else:
             raise Exception('Error from source %s' % r.text)
-            
 
     def job_info(self, jid="None"):
         try:
