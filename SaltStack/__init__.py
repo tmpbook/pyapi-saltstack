@@ -1,5 +1,6 @@
 # coding:utf:8
-__author__ = 'kevin yuan'
+import requests
+__author__ = 'kevin.gao'
 
 """
 import request
@@ -8,8 +9,6 @@ requests.packages.urllib3.disable_warnings()
 Use this above to ignore the `InsecureRequestWarning`
 """
 
-import requests
-requests.packages.urllib3.disable_warnings()
 
 class SaltStack(object):
 
@@ -31,19 +30,20 @@ class SaltStack(object):
         self.stats_url = self.host + "/stats"
 
         r = requests.post(self.login_url, verify=False, data={'username': username,
-                                                          'password': password,
-                                                          'eauth': eproto})
+                                                              'password': password,
+                                                              'eauth': eproto})
+
         if r.status_code == 200:
             self.cookies = r.cookies
         else:
             raise Exception('Error from source %s' % r.text)
 
-    def cmd_run(self, tgt, command, expr_form='compound', fun='cmd.run'):
-        r = requests.post(self.host, verify=False, cookies=self.cookies, data={'tgt': tgt,
+    def cmd_run(self, tgt, commond, expr_form='compound', fun='cmd.run'):
+        r = requests.post(self.host, verify=False, cookies=self.cookies, data={'tgt': tgt, 
                                                                                'client': 'local',
                                                                                'expr_form': expr_form,
                                                                                'fun': fun,
-                                                                               'arg': command})
+                                                                               'arg': commond})
         if r.status_code == 200:
             return r.json()['return'][0]
         else:
@@ -81,11 +81,11 @@ class SaltStack(object):
 
     def cp_file(self, tgt, from_path, to_path, expr_form='compound'):
         r = requests.post(self.host, verify=False, cookies=self.cookies, data={'tgt': tgt,
-                                                                                'client': 'local',
-                                                                                'fun': 'cp.get_file',
-                                                                                'arg': [from_path, to_path],
-                                                                      })
+                                                                               'client': 'local',
+                                                                               'fun': 'cp.get_file',
+                                                                               'arg': [from_path, to_path],})
         if r.status_code == 200:
+            print type(r.json())
             return r.json()
         else:
             raise Exception('Error from source %s' % r.text)
@@ -104,10 +104,10 @@ class SaltStack(object):
 
     def get_ip_addr(self, tgt, expr_form='compound', client='local'):
         r = requests.post(self.host, verify=False, data={'fun': 'network.interface_ip',
-                                             'tgt': tgt,
-                                             'client': client,
-                                             'expr_form': expr_form,
-                                             'arg': 'eth0'}, cookies=self.cookies)
+                                                         'tgt': tgt,
+                                                         'client': client,
+                                                         'expr_form': expr_form,
+                                                         'arg': 'eth0'}, cookies=self.cookies)
         if r.status_code == 200:
             return r.json()['return']
         else:
@@ -123,10 +123,10 @@ class SaltStack(object):
         :return: :raise Exception:
         """
         r = requests.post(self.host, verify=False, data={'fun': 'service.restart',
-                                             'tgt': tgt,
-                                             'client': client,
-                                             'expr_form': expr_form,
-                                             'arg': service}, cookies=self.cookies)
+                                                         'tgt': tgt,
+                                                         'client': client,
+                                                         'expr_form': expr_form,
+                                                         'arg': service}, cookies=self.cookies)
 
         if r.status_code == 200:
             return r.json()['return']
@@ -142,23 +142,28 @@ class SaltStack(object):
         :return: :raise Exception: api error
         """
         r = requests.post(self.host, data={'fun': 'grains.item',
-                                             'tgt': tgt,
-                                             'client': client,
-                                             'expr_form': expr_form,
-                                             'arg': 'ipv4'}, cookies=self.cookies)
+                                           'tgt': tgt,
+                                           'client': client,
+                                           'expr_form': expr_form,
+                                           'arg': 'ipv4'}, cookies=self.cookies)
         if r.status_code == 200:
             return r.json()['return']
         else:
             raise Exception('Error from source %s' % r.text)
 
-def test():
+
+def demo():
+    print HOST, PORT, USER, PASS, SECURE
     sapi = SaltStack(host=HOST,
                      port=PORT,
                      username=USER,
                      password=PASS,
                      secure=SECURE)
-    print sapi.cmd_run(tgt='*', command='pwd')
+    print sapi.host
+    print sapi.cookies
+    print sapi.manage_status()
+
 
 if __name__ == "__main__":
     from placeholders import *
-    test()
+    demo()
